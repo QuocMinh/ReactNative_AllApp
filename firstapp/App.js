@@ -9,7 +9,9 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
+  AppRegistry,
+  Navigator
 } from 'react-native';
 
 const instructions = Platform.select({
@@ -19,20 +21,19 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
+var Home = require('./component/Home.js')
+
 export default class App extends Component<{}> {
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
-      </View>
+      <Navigator
+        initialRoute = {{name: 'Home', component: Home}}
+        renderScene  = {(router, navigator) => {
+          if (router.component) {
+            return React.createElement(router.component, {navigator, passProps: router.props})
+          }
+        }}
+      />
     );
   }
 }
