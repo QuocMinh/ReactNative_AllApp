@@ -40,7 +40,7 @@ class Home extends Component {
     }
 
     _pushView(menuName) {
-        
+
     }
 
     render() {
