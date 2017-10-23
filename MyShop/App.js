@@ -12,9 +12,10 @@ import ManHinhB from './component/ManHinhB.js';
 import ManHinhC from './component/ManHinhC.js';
 import ListViewExam from './component/ListViewExam.js';
 import Login from './component/Login.js';
+import BookSo from './component/BookSo.js';
 
 const App = StackNavigator({
-  Home    : { screen: Login },
+  Home    : { screen: BookSo },
   ManHinhA: { screen: ManHinhA },
   ManHinhB: { screen: ManHinhB },
   ManHinhC: { screen: ManHinhC }

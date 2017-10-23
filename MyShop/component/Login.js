@@ -1,11 +1,14 @@
 //import liraries
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import Button from './Button.js'
 
 // create a component
 class Login extends Component {
     static navigationOptions = {
-        title: "Login"
+        title: "Login",
+        headerStyle: { backgroundColor: 'blue' },
+        headerTitleStyle: { color: 'white' },
     }
 
     constructor(props) {
@@ -14,7 +17,7 @@ class Login extends Component {
             so1: "",
             so2: "",
             result: "..."
-        }
+        };
     }
 
     render() {
@@ -30,9 +33,7 @@ class Login extends Component {
                     onChangeText={so2 => this.setState({so2})}
                     value={this.state.so2}
                 />
-                <TouchableOpacity style={styles.textButton}>
-                    <Text style={styles.textButtonText}>Cong</Text>
-                </TouchableOpacity>
+                <Button textButton="CONG"/>
                 <View style={styles.result}>
                     <Text>{this.state.result}</Text>
                 </View>
@@ -46,7 +47,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        backgroundColor: 'yellow',
         padding: 20
     },
     textInput: {
