@@ -1,21 +1,21 @@
-//import liraries
 import React, { Component } from 'react';
 import { 
     View, Text, StyleSheet, 
     TextInput, Picker, TouchableOpacity,  
     ScrollView,
-    Alert
+    Alert, AsyncStorage
 } from 'react-native';
 
 const Item = Picker.Item;
 
-// create a component
 class BookForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
             sdt : '',
-            macv: 'cskh'
+            macv: 'cskh',
+            serverAddr: 'localhost',
+            serverPort: '8080'
         }
     }
 
@@ -25,62 +25,66 @@ class BookForm extends Component {
         });
     }
 
-    booking() {
-        var phone = this.state.sdt.trim();
+    isPhoneFormat(sdt) {
+        var phone = sdt.trim();
         phone = phone.replace('(+84)', '0');
         phone = phone.replace('+84', '0');
         phone = phone.replace('0084', '0');
         phone = phone.replace(/ /g, '');
-
-        var formData = new FormData();
-        formData.append('sdt', this.state.sdt);
-        formData.append('macv', this.state.macv);
+        var flag = false;
 
         if (phone != '') {
             var firstNumber = phone.substring(0, 2);
             if ((firstNumber == '09' || firstNumber == '08') && phone.length == 10) {
                 if (phone.match(/^\d{10}/)) {
-                    fetch('http://10.151.122.84:8080/datso', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then((response) => {
-                        if(response._bodyText == 'OK!') {
-                            Alert.alert('Đặt số thành công');
-                        } else {
-                            Alert.alert('Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
-                        }
-                    })
-                    .catch((err) => console.log(err))
-                    
-                    this.setState({ sdt: "" });
-                    Alert.alert('Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
-                } else {
-                    Alert.alert('Vui lòng kiểm tra lại số điện thoại');
+                    flag = true;
                 }
             } else if (firstNumber == '01' && phone.length == 11) {
                 if (phone.match(/^\d{11}/)) {
-                    fetch('http://10.151.122.84:8080/datso', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then((response) => {
-                        if(response._bodyText == 'OK!') {
-                            Alert.alert('Đặt số thành công');
-                        } else {
-                            Alert.alert('Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
-                        }
-                    })
-                    .catch((err) => console.log(err))
-
-                    this.setState({ sdt: "" });
-                } else {
-                    Alert.alert('Vui lòng kiểm tra lại số điện thoại');
+                    flag = true;
                 }
-            } else {
-                Alert.alert('Vui lòng kiểm tra lại số điện thoại');
             }
         }
+
+        return flag;
+    }
+
+    // ------------------- Chua Test ---------------------------
+    booking() {
+        var formData = new FormData();
+        formData.append('sdt', this.state.sdt);
+        formData.append('macv', this.state.macv);
+
+        if(this.isPhoneFormat(this.state.sdt)) {
+            fetch('http://' + this.state.serverAddr + ':' + this.state.serverPort + '/datso', {
+                method: 'POST',
+                body: formData
+            })
+            .then((response) => {
+                if(response._bodyText == 'OK!') {
+                    Alert.alert('Đặt số thành công');
+                } else {
+                    Alert.alert('Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
+                }
+            })
+            .catch((err) => console.log(err))
+
+            // Set null Text input
+            this.setState({ sdt: "" })
+        } else {
+            Alert.alert('Vui lòng kiểm tra lại số điện thoại');
+        }
+    }
+
+    componentDidMount() {
+        AsyncStorage.getItem("@Config:serverAddr").then((value) => {
+            if(value !== null)
+                this.setState({"serverAddr": value});
+        }).done();
+        AsyncStorage.getItem("@Config:serverPort").then((value) => {
+            if(value !== null)
+                this.setState({"serverPort": value});
+        }).done();
     }
 
     render() {
@@ -96,7 +100,8 @@ class BookForm extends Component {
                     placeholder="Số điện thoại"
                     placeholderTextColor='#d7d7d7'
                     keyboardType='phone-pad'
-                    onChangeText={sdt => this.setState({sdt: sdt})}/>
+                    onChangeText={sdt => this.setState({sdt: sdt})}
+                    value={this.state.sdt}/>
                 <Text style={styles.title}>
                     Chọn dịch vụ
                 </Text>
@@ -115,13 +120,17 @@ class BookForm extends Component {
                     <Text style={styles.btnBook}>
                         Đặt số
                     </Text>
-                </TouchableOpacity>                
+                </TouchableOpacity>
+                <View>
+                    <Text>SDT: {this.state.sdt}</Text>
+                    <Text>MACV: {this.state.macv}</Text>
+                    <Text>http://{this.state.serverAddr}:{this.state.serverPort}/datso</Text>
+                </View>
             </View>
         );
     }
 }
 
-// define your styles
 const styles = StyleSheet.create({
     container: {
         padding: 20
@@ -161,5 +170,4 @@ const styles = StyleSheet.create({
     }
 });
 
-//make this component available to the app
 export default BookForm;
