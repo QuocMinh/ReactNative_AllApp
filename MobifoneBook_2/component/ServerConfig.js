@@ -1,16 +1,19 @@
-//import liraries
 import React, { Component } from 'react';
 import { 
     View, Text, StyleSheet, ScrollView, 
     Dimensions, Image, TextInput, TouchableOpacity, 
     AsyncStorage, Alert
 } from 'react-native';
-import NavigationActions from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 const { height } = Dimensions.get('window');
 const imgSetting  = require('./images/icon-setting.png');
 
-// create a component
+const resetAction = NavigationActions.reset({
+    index: 0,
+    actions: [NavigationActions.navigate({ routeName: 'Home' })],
+});
+
 class ServerConfig extends Component {
     static navigationOptions = {
         title           : 'Cài đặt Server',
@@ -37,8 +40,8 @@ class ServerConfig extends Component {
                 [ 
                     { 
                         text: 'Về trang chủ', 
-                        // onPress: () => navigateTo('Home') 
-                        onPress: () => this.props.navigation.navigate('Home')
+                        // onPress: () => this.props.navigation.navigate('Home')
+                        onPress: () => this.props.navigation.dispatch(resetAction)
                     } 
                 ]
             )
@@ -94,7 +97,6 @@ class ServerConfig extends Component {
     }
 }
 
-// define your styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -143,5 +145,4 @@ const styles = StyleSheet.create({
     }
 });
 
-//make this component available to the app
 export default ServerConfig;
