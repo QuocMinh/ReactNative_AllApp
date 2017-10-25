@@ -3,8 +3,9 @@ import React, { Component } from 'react';
 import { 
     View, Text, StyleSheet, ScrollView, 
     Dimensions, Image, TextInput, TouchableOpacity, 
-    AsyncStorage, Alert 
+    AsyncStorage, Alert
 } from 'react-native';
+import NavigationActions from 'react-navigation';
 
 const { height } = Dimensions.get('window');
 const imgSetting  = require('./images/icon-setting.png');
@@ -30,10 +31,20 @@ class ServerConfig extends Component {
             AsyncStorage.setItem('@Config:serverAddr', this.state.serverAddr);
             AsyncStorage.setItem('@Config:serverPort', this.state.serverPort);
 
-            Alert.alert('OK!', 'Đã lưu cấu hình.')
+            Alert.alert(
+                'OK!', 
+                'Đã lưu cấu hình.',
+                [ 
+                    { 
+                        text: 'Về trang chủ', 
+                        // onPress: () => navigateTo('Home') 
+                        onPress: () => this.props.navigation.navigate('Home')
+                    } 
+                ]
+            )
         } catch (err) {
             console.log(err);
-            Alert.alert('LỖI', 'Rất tiếc! Đã xãy ra lỗi, vui lòng thực hiện lại.')
+            Alert.alert('LỖI', 'Rất tiếc! Đã xãy ra lỗi, vui lòng thực hiện lại.');
         }
     }
 

@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, ListView, Dimensions, AsyncStorage } from 'react-native';
+import { View, Text, StyleSheet, ListView, Dimensions, AsyncStorage, Picker, Alert } from 'react-native';
 
 import Item from './Item.js';
 
 const { height, width } = Dimensions.get('window');
+const ItemPicker = Picker.Item;
+
 
 class DanhSach extends Component {
     static navigationOptions = {
@@ -12,12 +14,21 @@ class DanhSach extends Component {
         headerTintColor : 'white'
     }
 
+    updateSelected(value) {
+        if(value === null || value === '') {
+            return 'today'
+        }
+
+        return value;
+    }
+
     constructor(props) {
         super(props);
         this.state = {
             dataSource: new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 }),
             serverAddr: 'locahost',
-            serverPort: '8080'
+            serverPort: '8080',
+            selected: 'today'
         }
     }
 
@@ -43,6 +54,16 @@ class DanhSach extends Component {
                             });
                         })
                         .catch(err => {
+                            Alert.alert (
+                                "LỖI!",
+                                "Vui lòng kiểm tra lại cấu hình Server. " + err,
+                                [ 
+                                    { 
+                                        text: 'Đi đến cài đặt', 
+                                        onPress: () => this.props.navigation.navigate('ServerConfig')
+                                    } 
+                                ]
+                            )
                             console.log(err);
                         });
 
@@ -68,7 +89,7 @@ class DanhSach extends Component {
                     <Text style={styles.date}>Ngày đặt</Text>
                 </View>
                 
-                <Item number='1' phone='01239496986' date='28/10/1995' trangthai='1' />
+                {/* <Item number='1' phone='01239496986' date='28/10/1995' trangthai='1' /> */}
 
                 <ListView
                     dataSource={this.state.dataSource}
@@ -107,6 +128,9 @@ const styles = StyleSheet.create({
     date: {
         flex: 0.4,
         color: 'white'
+    },
+    filterView: {
+        flexDirection: 'row'
     }
 });
 

@@ -61,9 +61,6 @@ class HomeScreen extends Component {
                         <Card screenName='ServerConfig' title='Cài đặt Server' img={imgSetting}  navigate={navigate} />
                     </ScrollView>
                 </View>
-                <View>
-                    <Text>http://{this.state.serverAddr}:{this.state.serverPort}</Text>
-                </View>
             </View>
         );
     }
@@ -81,7 +78,7 @@ const styles = StyleSheet.create({
         marginTop: 5
     },
     appContainer: {
-        height: height/4,
+        height: height/4.5,
         borderBottomWidth: 1,
         borderBottomColor: "#ccc"
     }

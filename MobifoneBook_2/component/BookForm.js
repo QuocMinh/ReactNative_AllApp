@@ -63,14 +63,17 @@ class BookForm extends Component {
             .then((response) => {
                 if(response._bodyText == 'OK!') {
                     Alert.alert('Đặt số thành công');
+
+                    // Set null Text input
+                    this.setState({ sdt: "" })
                 } else {
                     Alert.alert('Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
                 }
             })
-            .catch((err) => console.log(err))
-
-            // Set null Text input
-            this.setState({ sdt: "" })
+            .catch((err) => {
+                Alert.alert("LỖI!", "Vui lòng kiểm tra lại cấu hình Server. " + err);
+                console.log(err);
+            })
         } else {
             Alert.alert('Vui lòng kiểm tra lại số điện thoại');
         }
@@ -121,11 +124,11 @@ class BookForm extends Component {
                         Đặt số
                     </Text>
                 </TouchableOpacity>
-                <View>
+                {/* <View>
                     <Text>SDT: {this.state.sdt}</Text>
                     <Text>MACV: {this.state.macv}</Text>
                     <Text>http://{this.state.serverAddr}:{this.state.serverPort}/datso</Text>
-                </View>
+                </View> */}
             </View>
         );
     }
