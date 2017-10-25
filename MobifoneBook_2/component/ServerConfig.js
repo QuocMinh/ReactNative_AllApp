@@ -76,7 +76,7 @@ class ServerConfig extends Component {
                         keyboardType='phone-pad'
                         onChangeText={serverPort => this.setState({ serverPort: serverPort })}
                         value={this.state.serverPort}/>
-                    <Text style={styles.review}>Xem lại: http://{this.state.serverAddr}:{this.state.serverPort}</Text>
+                    <Text style={styles.review}>Xem lại: http://{this.state.serverAddr}:{this.state.serverPort}/</Text>
                     <TouchableOpacity onPress={this.saveSetting.bind(this)}>
                         <Text style={styles.btnBook}>Lưu cài đặt</Text>
                     </TouchableOpacity>

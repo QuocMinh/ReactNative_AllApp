@@ -1,35 +1,27 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, ListView, Dimensions, AsyncStorage, Picker, Alert } from 'react-native';
 
-import Item from './Item.js';
+import Item         from './Item.js';
+import SimpleToggle from './SimpleToggle.js';
 
 const { height, width } = Dimensions.get('window');
 const ItemPicker = Picker.Item;
 
-
 class DanhSach extends Component {
-    static navigationOptions = {
-        title           : 'Danh sách book số',
-        headerStyle     : { backgroundColor: '#0084EB' },
-        headerTintColor : 'white'
-    }
-
-    updateSelected(value) {
-        if(value === null || value === '') {
-            return 'today'
-        }
-
-        return value;
-    }
-
     constructor(props) {
         super(props);
         this.state = {
             dataSource: new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 }),
             serverAddr: 'locahost',
             serverPort: '8080',
-            selected: 'today'
+            check: true
         }
+    }
+
+    static navigationOptions = {
+        title           : 'Danh sách book số',
+        headerStyle     : { backgroundColor: '#0084EB' },
+        headerTintColor : 'white'
     }
 
     fectchingData = async() => {
@@ -48,10 +40,10 @@ class DanhSach extends Component {
                         fetch("http://" + this.state.serverAddr + ":" + this.state.serverPort + "/datso/danhsach")
                         .then((response) => response.json())
                         .then((responseJson) => {
-                            console.log(responseJson);
                             this.setState({
                                 dataSource: this.state.dataSource.cloneWithRows(responseJson)
                             });
+                            
                         })
                         .catch(err => {
                             Alert.alert (
@@ -67,8 +59,10 @@ class DanhSach extends Component {
                             console.log(err);
                         });
 
+                        console.log(this.state.dataSource);
                         console.log(this.state.serverAddr);
                         console.log(this.state.serverPort);
+                        
                     }
                 })
             };
