@@ -43,26 +43,31 @@ class Signature extends Component {
   }
 
   onSketchSave(saveEvent) {
+    console.log('props', this.props);
+    console.log('saveEvent', saveEvent);
+
+    const { navigate } = this.props;
+
+    navigate('DrawScreen', {img: saveEvent.localFilePath})
+
     this.props.onSave && this.props.onSave(saveEvent);
   }
 
   render() {
+    console.log('Signature => props', this.props);
     return (
       <View style={styles.container}>
-        <SketchView style={{ flex: 1, backgroundColor: 'white' }} ref="sketchRef"
+        <SketchView style={{ flex: 1, backgroundColor: 'white', width: Params.SCREEN_WIDTH }} ref="sketchRef"
           selectedTool={this.state.toolSelected}
           onSaveSketch={this.onSketchSave.bind(this)}
           localSourceImagePath={this.props.localSourceImagePath} />
 
         <View style={{ flexDirection: 'row', backgroundColor: '#EEE' }}>
           <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20 }} onPress={() => { this.refs.sketchRef.clearSketch() }}>
-            <Text style={{ color: '#888', fontWeight: '600' }}>CLEAR</Text>
+            <Text style={{ color: '#888', fontWeight: '600' }}>Ký lại</Text>
           </TouchableHighlight>
           <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#DDD' }} onPress={() => { this.refs.sketchRef.saveSketch() }}>
-            <Text style={{ color: '#888', fontWeight: '600' }}>SAVE</Text>
-          </TouchableHighlight>
-          <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: this.isEraserToolSelected() ? "#CCC" : "rgba(0,0,0,0)" }} onPress={this.toolChangeClick.bind(this)}>
-            <Text style={{ color: '#888', fontWeight: '600' }}>ERASER</Text>
+            <Text style={{ color: '#888', fontWeight: '600' }}>Lưu chữ ký</Text>
           </TouchableHighlight>
         </View>
       </View>
@@ -77,7 +82,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#2c3e50',
     width: Params.SCREEN_WIDTH,
-    height: 200
   },
 });
 

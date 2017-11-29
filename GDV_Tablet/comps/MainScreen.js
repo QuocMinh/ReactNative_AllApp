@@ -14,10 +14,12 @@ class MainScreen extends Component {
   }
 
   render() {
+    const navigate = this.props.navigation.navigate;
+
     return (
       <View style={styles.container}>
         <CustomerInfo style={styles.customerView}/>
-        <Signature style={styles.signatureView} />
+        <Signature style={styles.signatureView} navigate={navigate}/>
       </View>
     );
   }

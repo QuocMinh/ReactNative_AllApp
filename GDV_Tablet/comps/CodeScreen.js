@@ -46,7 +46,7 @@ class CodeScreen extends Component {
               autoFocus={true}
             />
             <TouchableOpacity
-              onPress={() => { navigate('MainScreen') }}
+              onPress={() => { navigate('MainScreen', {...this.props}) }}
             >
               <Text style={styles.btnText}>Xác nhận</Text>
             </TouchableOpacity>
