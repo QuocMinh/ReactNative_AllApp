@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableHighlight } from 'react-native';
+import { View, Text, StyleSheet, TouchableHighlight, ToastAndroid, Keyboard } from 'react-native';
 
 // Utils
-import { Utils, Params } from "../utils/Utils.js";
+import { Utils, Params } from "../utils/Utils";
+// Webservice config
+import WSConfig from "../utils/WSConfig";
 // Library to draw
 import SketchView from 'react-native-sketch-view';
 
@@ -27,37 +29,53 @@ class Signature extends Component {
     this.state = {
       toolSelected: sketchViewConstants.toolType.pen.id
     };
-  }
-
-  isEraserToolSelected() {
-    console.log('isEraserToolSelected');
-    return this.state.toolSelected === sketchViewConstants.toolType.eraser.id;
-  }
-
-  toolChangeClick() {
-    this.setState({ toolSelected: tools[this.state.toolSelected].nextId });
-  }
-
-  getToolName() {
-    return tools[this.state.toolSelected].name;
+    Keyboard.dismiss();
   }
 
   onSketchSave(saveEvent) {
-    console.log('props', this.props);
-    console.log('saveEvent', saveEvent);
+    // Lay du lieu truyen vao tu MainScreen
+    const transactionInfo = this.props.transactionInfo;
 
-    const { navigate } = this.props;
+    // Create file name = isdn_chuky
+    var fileName = transactionInfo.isdn + '_chuky.jpg';
 
-    navigate('DrawScreen', {img: saveEvent.localFilePath})
+    // Upload to server
+    this.uploadSignature(Params.IMEI, transactionInfo.folder, fileName, saveEvent.base64Str);
+  }
 
-    this.props.onSave && this.props.onSave(saveEvent);
+  uploadSignature(userName, path, fileName, base64Str) {
+    var url = WSConfig.MAIN_URL + WSConfig.UPLOAD_FILE_URL;
+    Utils.log('uploadSignature -> url', url);
+
+    // Upload image to server
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      body: `<?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <uploadFile xmlns="WSGDV">
+              <lat>string</lat>
+              <lng>string</lng>
+              <username>${userName}</username>
+              <folder>${path}</folder>
+              <filename>${fileName}</filename>
+              <base64data>${base64Str}</base64data>
+            </uploadFile>
+          </soap:Body>
+        </soap:Envelope>`
+    })
+      .then((resp) => { 
+        Utils.log('uploadSignature', resp);
+        ToastAndroid.show('Lưu chữ ký thành công!', ToastAndroid.BOTTOM);
+      })
+      .catch((err) => console.error(err));
   }
 
   render() {
-    console.log('Signature => props', this.props);
     return (
       <View style={styles.container}>
-        <SketchView style={{ flex: 1, backgroundColor: 'white', width: Params.SCREEN_WIDTH }} ref="sketchRef"
+        <SketchView style={{ flex: 1, backgroundColor: '#EEE657', width: Params.SCREEN_WIDTH }} ref="sketchRef"
           selectedTool={this.state.toolSelected}
           onSaveSketch={this.onSketchSave.bind(this)}
           localSourceImagePath={this.props.localSourceImagePath} />

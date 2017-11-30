@@ -11,9 +11,9 @@ class DrawScreen extends Component {
         console.log('Source', this.props.navigation.state.params.img);
         return (
             <View style={styles.container}>
-                <Image
+                {/* <Image
                     source={require('/data/user/0/com.gdv_tablet/cache/sketch_-10383022331d900faa-602b-4fc3-89e1-25331ecf37b1.png')}
-                />
+                /> */}
             </View>
         );
     }

@@ -14,12 +14,18 @@ class MainScreen extends Component {
   }
 
   render() {
-    const navigate = this.props.navigation.navigate;
+    const navigate      = this.props.navigation.navigate;
+    const customerInfo  = this.props.navigation.state.params.customerInfo;
+    var transactionInfo = {
+      code: customerInfo.code,
+      folder: customerInfo.folder,
+      isdn: customerInfo.isdn
+    }
 
     return (
       <View style={styles.container}>
-        <CustomerInfo style={styles.customerView}/>
-        <Signature style={styles.signatureView} navigate={navigate}/>
+        <CustomerInfo style={styles.customerView} customerInfo={customerInfo}/>
+        <Signature style={styles.signatureView} navigate={navigate} transactionInfo={transactionInfo}/>
       </View>
     );
   }
