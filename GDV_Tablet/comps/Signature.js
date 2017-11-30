@@ -75,7 +75,7 @@ class Signature extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <SketchView style={{ flex: 1, backgroundColor: '#EEE657', width: Params.SCREEN_WIDTH }} ref="sketchRef"
+        <SketchView style={{ flex: 1, width: Params.SCREEN_WIDTH }} ref="sketchRef"
           selectedTool={this.state.toolSelected}
           onSaveSketch={this.onSketchSave.bind(this)}
           localSourceImagePath={this.props.localSourceImagePath} />
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#EEE657',
     width: Params.SCREEN_WIDTH,
   },
 });
