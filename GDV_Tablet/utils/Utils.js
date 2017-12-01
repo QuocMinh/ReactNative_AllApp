@@ -1,15 +1,9 @@
 import { Dimensions } from "react-native";
-
+import DeviceInfo from "react-native-device-info";
 
 const { width, height, fontScale } = Dimensions.get('window');
 
 class Utils  {
-    
-    constructor() {
-        console.log('=============');
-        console.log('Utils created');
-        console.log('=============');
-    }
     
     log = (name, message) => {
         var fn = name + '()';
@@ -42,7 +36,10 @@ var Params = {
     SCREEN_WIDTH        : width,
     SCREEN_HEGHT        : height,
     SCREEN_FONTSCALSE   : fontScale,
-    IMEI                : '355755087434999',
+    IMEI                : DeviceInfo.getIMEI(),
+    IMSI                : DeviceInfo.getIMSI(),
+    ISDN                : DeviceInfo.getPhoneNumber(),
+    SERIAL              : DeviceInfo.getUniqueID(),
 };
 
 module.exports = { Utils: new Utils(), Params: Params };
