@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableHighlight, ToastAndroid, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TouchableHighlight, ToastAndroid, Keyboard, ActivityIndicator, TouchableOpacity, Alert, TouchableWithoutFeedback } from 'react-native';
 
 // Utils
 import { Utils, Params } from "../utils/Utils";
@@ -27,20 +27,26 @@ class Signature extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      toolSelected: sketchViewConstants.toolType.pen.id
+      toolSelected: sketchViewConstants.toolType.pen.id,
+      onSaving: false,
+      startDraw: false,
+      onDraw: false
     };
     Keyboard.dismiss();
   }
 
   onSketchSave(saveEvent) {
-    // Lay du lieu truyen vao tu MainScreen
-    const transactionInfo = this.props.transactionInfo;
-
-    // Create file name = isdn_chuky
-    var fileName = transactionInfo.isdn + '_chuky.jpg';
-
-    // Upload to server
-    this.uploadSignature(Params.IMEI, transactionInfo.folder, fileName, saveEvent.base64Str);
+    if(this.state.onDraw) {
+      this.setState({ onSaving: true });
+      // Lay du lieu truyen vao tu MainScreen
+      const transactionInfo = this.props.transactionInfo;
+      // Create file name = isdn_chuky
+      var fileName = transactionInfo.isdn + '_chuky.jpg';
+      // Upload to server
+      this.uploadSignature(Params.IMEI, transactionInfo.folder, fileName, saveEvent.base64Str);
+    } else {
+      Alert.alert('Thông báo!', 'Vui lòng ký tên trước khi lưu.');
+    }
   }
 
   uploadSignature(userName, path, fileName, base64Str) {
@@ -65,29 +71,79 @@ class Signature extends Component {
           </soap:Body>
         </soap:Envelope>`
     })
-      .then((resp) => { 
+      .then((resp) => {
         Utils.log('uploadSignature', resp);
         ToastAndroid.show('Lưu chữ ký thành công!', ToastAndroid.BOTTOM);
+        this.setState({ onSaving: false });
       })
-      .catch((err) => console.error(err));
+      .catch((err) => { console.error(err); this.setState({ onSaving: false }); });
+  }
+
+  setFlexForSketch() {
+    return this.state.onSaving ? { flex: 0 } : { flex: 1 };
+  }
+
+  _renderProgressCreen() {
+    if(this.state.onSaving) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator
+            animating={true}
+            color='#bc2b78'
+            size="large"
+            style={styles.activityIndicator} />
+          <Text>Đang xử lý, vui lòng chờ trong giây lát.</Text>
+        </View>
+      );
+    }
+  }
+
+  _renderDrawScreen() {
+    if(this.state.startDraw) {
+      return (
+        <View>
+          <TouchableWithoutFeedback
+            // onPress={() => this.setState({ onDraw: true })}
+            onPressIn={() => {this.setState({ onDraw: true }), console.log('1111')}}
+          >
+            <SketchView style={[{ width: Params.SCREEN_WIDTH }, { ...this.setFlexForSketch() }]} ref="sketchRef"
+              selectedTool={this.state.toolSelected}
+              onSaveSketch={this.onSketchSave.bind(this)}
+              localSourceImagePath={this.props.localSourceImagePath} />
+          </TouchableWithoutFeedback>
+          <View style={{ flexDirection: 'row', backgroundColor: '#EEE' }}>
+            <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20 }} onPress={() => { this.refs.sketchRef.clearSketch(); this.setState({ onDraw: false }) }}>
+              <Text style={{ color: '#888', fontWeight: '600' }}>Ký lại</Text>
+            </TouchableHighlight>
+            <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#DDD' }} onPress={() => { this.refs.sketchRef.saveSketch() }}>
+              <Text style={{ color: '#888', fontWeight: '600' }}>Lưu chữ ký</Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      );
+    } else {
+      return (
+        <TouchableOpacity 
+          onPress={() => this.setState({ startDraw: true })}
+          onPressIn={() => this.setState({ startDraw: true })}
+        >
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={{
+              fontSize: Params.SCREEN_WIDTH / 15,
+            }}>
+              Chạm để bắt đầu ký tên
+          </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <SketchView style={{ flex: 1, backgroundColor: '#EEE657', width: Params.SCREEN_WIDTH }} ref="sketchRef"
-          selectedTool={this.state.toolSelected}
-          onSaveSketch={this.onSketchSave.bind(this)}
-          localSourceImagePath={this.props.localSourceImagePath} />
-
-        <View style={{ flexDirection: 'row', backgroundColor: '#EEE' }}>
-          <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20 }} onPress={() => { this.refs.sketchRef.clearSketch() }}>
-            <Text style={{ color: '#888', fontWeight: '600' }}>Ký lại</Text>
-          </TouchableHighlight>
-          <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#DDD' }} onPress={() => { this.refs.sketchRef.saveSketch() }}>
-            <Text style={{ color: '#888', fontWeight: '600' }}>Lưu chữ ký</Text>
-          </TouchableHighlight>
-        </View>
+        {this._renderProgressCreen()}
+        {this._renderDrawScreen()}
       </View>
     );
   }
@@ -98,7 +154,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#EEE657',
     width: Params.SCREEN_WIDTH,
   },
 });
