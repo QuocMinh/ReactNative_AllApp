@@ -1,23 +1,30 @@
 import React, { Component } from 'react';
 import { 
   View, Text, StyleSheet, StatusBar, Image, TextInput, Dimensions, TouchableOpacity, Keyboard, TouchableWithoutFeedback, ToastAndroid, ActivityIndicator,
-  NetInfo, Alert
+  NetInfo, Alert, BackHandler
 } from 'react-native';
 
 // Utils
 import { Utils, Params } from "../utils/Utils.js";
 // Webservices Config
 import WSConfig from "../utils/WSConfig";
-
-const { width, height } = Dimensions.get('window');
+// Android Location Services Dialog Box
+import LocationServicesDialogBox from "react-native-android-location-services-dialog-box";
 
 class CodeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       code: '',
-      inProgress: false
+      inProgress: false,
+      locationIsEnabled: false,
+      internetIsConnected: false
     }
+
+    // Lắng nghe sự kiện khi click nút Back trở về màn hình nhập MGD
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      LocationServicesDialogBox.forceCloseDialog();
+    });
   }
 
   static navigationOptions = {
@@ -26,18 +33,144 @@ class CodeScreen extends Component {
     headerTintColor: 'white'
   }
 
+  async componentDidMount() {
+    // Check internet connection
+    await this.checkInternetConnected();
+    // Check Location
+    if(this.state.internetIsConnected) this.checkLocationIsEnabled();
+  }
+
+  // ========================================================================================================================================
+  // FUNCTION
+  // ========================================================================================================================================
+
+  async checkLocationIsEnabled() {
+    let that = this;
+    await LocationServicesDialogBox.checkLocationServicesIsEnabled({
+      message: "<h2>Vị trí của bạn ?</h2>Ứng dụng muốn thay đổi một số cài đặt của bạn:<br/><br/>Sử dụng GPS, Wi-Fi, và mạng di động cho vị trí", /* <a href='#'>Learn more</a> */
+      ok: "ĐI ĐẾN CÀI ĐẶT",
+      cancel: "KHÔNG CHO PHÉP",
+      enableHighAccuracy: true,   // true  => GPS AND NETWORK PROVIDER, false => ONLY GPS PROVIDER
+      showDialog: true,           // false => Opens the Location access page directly
+      openLocationServices: true  // false => Directly catch method is called if location services are turned off
+    })
+      .then(function (success) {
+
+        console.log('Location', success);
+        that.setState({ locationIsEnabled: true });
+
+      }).catch((error) => { console.log('Location', error.message); this.setState({ locationIsEnabled: false }) });
+  }
+
+  async checkInternetConnected() {
+    await NetInfo.isConnected.fetch().then(isConnected => {
+      this.setState({ internetIsConnected: isConnected }); // Save internet status to state
+      console.log('Internet: ', isConnected);
+      if (!isConnected) Alert.alert('Lỗi mạng!', 'Bạn chưa kết nối mạng hoặc mạng đang có vấn đề.\nVui lòng thử lại sau.');
+    });
+  }
+
+  _renderActivityIndicator() {
+    if(this.state.inProgress) {
+      return (
+        <View>
+          <ActivityIndicator
+            animating={this.state.inProgress}
+            color='#bc2b78'
+            size="large"
+            style={styles.activityIndicator} />
+          <Text>Đang xử lý, vui lòng chờ trong giây lát.</Text>
+        </View>
+      );
+    } else {
+      return ( <Text style={{fontSize: 20, color: Params.SECONDARY_COLOR}}>Vui lòng nhập Mã giao dịch để bắt đầu.</Text> );
+    }
+  }
+
+  async checkValidateCodeWithLocation() {
+    // Check internet Connection
+    await this.checkInternetConnected();
+    // Check location Service
+    await this.checkLocationIsEnabled();
+
+    if(this.state.internetIsConnected) {
+      if (this.state.locationIsEnabled) {
+        if (this.state.inProgress === false) {
+          this.setState({ inProgress: true }); // Update state:
+          this.validateCode(); // Bắt đầu thực hiện
+        } else { ToastAndroid.show('Đang xử lý, vui lòng chờ.', ToastAndroid.LONG); /* Show Toast thong bao cho nguoi dung */ }
+      }
+    }
+  }
+
+  async checkValidateCodeWithoutLocation() {
+    // Check internet Connection
+    await this.checkInternetConnected();
+
+    if (this.state.internetIsConnected) {
+      if (this.state.inProgress === false) {
+        this.setState({ inProgress: true }); // Update state
+        this.validateCode(); // Bắt đầu thực hiện
+      } else {
+        ToastAndroid.show('Đang xử lý, vui lòng chờ.', ToastAndroid.LONG); /* Show Toast thong bao cho nguoi dung */
+      }
+    }
+  }
+
+  checkValidateCodeWithoutLocation1() {
+    // Check internet Connection
+    NetInfo.isConnected.fetch().then(isConnected => {
+      if (isConnected === false) {
+        Alert.alert('Lỗi mạng!', 'Bạn chưa kết nối mạng hoặc mạng đang có vấn đề.\nVui lòng thử lại sau.');
+      } else {
+        if (this.state.inProgress === false) {
+          this.setState({ inProgress: true }); // Update state
+          this.validateCode();
+        } else { ToastAndroid.show('Đang xử lý, vui lòng chờ.', ToastAndroid.LONG); /* Show Toast thong bao cho nguoi dung */ }
+      }
+    });
+  }
+
+  validateCode() {
+    const navigate  = this.props.navigation.navigate,
+          url       = WSConfig.MAIN_URL + WSConfig.GET_CODE_DATA_URL;
+
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      body:
+        `<?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <getTransCode xmlns="WSGDV">
+              <lat>string</lat>
+              <lng>string</lng>
+              <username>${Params.IMEI}</username>
+              <code>${this.state.code}</code>
+            </getTransCode>
+          </soap:Body>
+        </soap:Envelope>`
+    }).then(resp => {
+        let xmlResp  = resp._bodyText;               // Lay body text cua SOAP
+        var respJson = Utils.respXml2Json(xmlResp);  // Convert xml string to Json
+        
+        navigate('MainScreen', { ...this.props, customerInfo: respJson });  // Redirect to MainScreen with some props
+        this.setState({ inProgress: false, code: '' })                      // Update state
+    }).catch(err => {
+        console.error(err);
+        this.setState({ inProgress: false }) // Update state:
+    });
+  }
+
+  // ========================================================================================================================================
+  // RENDER
+  // ========================================================================================================================================
+
   render() {
-    Utils.log('IMEI', Params.IMEI);
-    Utils.log('ISDN', Params.ISDN);
-    Utils.log('SERIAL', Params.SERIAL);
-    Utils.log('IMSI', Params.IMSI);
-
-    
-
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-        
+
           <StatusBar
             backgroundColor={Params.SECONDARY_COLOR}
             barStyle="light-content"
@@ -69,7 +202,7 @@ class CodeScreen extends Component {
                 autoFocus={true}
               />
 
-              <TouchableOpacity onPress={() => this.checkValidateCode()} >
+              <TouchableOpacity onPress={() => this.checkValidateCodeWithoutLocation()} >
                 <Text style={styles.btnText}>Xác nhận</Text>
               </TouchableOpacity>
 
@@ -80,108 +213,13 @@ class CodeScreen extends Component {
       </TouchableWithoutFeedback>
     );
   }
-
-  componentDidMount() {
-    NetInfo.isConnected.fetch().then(isConnected => {
-      if (isConnected === false) {
-        Alert.alert('Lỗi mạng!', ' Vui lòng kiểm tra lại kết nối mạng trước khi sử dụng.');
-      }
-    });
-  }
-
-  _renderActivityIndicator() {
-    if(this.state.inProgress) {
-      return (
-        <View>
-          <ActivityIndicator
-            animating={this.state.inProgress}
-            color='#bc2b78'
-            size="large"
-            style={styles.activityIndicator} />
-          <Text>Đang xử lý, vui lòng chờ trong giây lát.</Text>
-        </View>
-      );
-    } else {
-      return (
-        <Text style={{fontSize: 20, color: Params.SECONDARY_COLOR}}>Vui lòng nhập Mã giao dịch để bắt đầu.</Text>
-      );
-    }
-  }
-
-  checkValidateCode () {
-    const { navigate } = this.props.navigation;
-    let url = WSConfig.MAIN_URL + WSConfig.GET_CODE_DATA_URL;
-
-    // Check internet Connection
-    NetInfo.isConnected.fetch().then(isConnected => {
-      if (isConnected === false) {
-        Alert.alert('Lỗi mạng!', 'Bạn chưa kết nối mạng hoặc mạng đang có vấn đề.\nVui lòng thử lại sau.');
-      } else {
-
-        if (this.state.inProgress === false) {
-          // Update state:
-          this.setState({ inProgress: true });
-
-          fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/xml; charset=utf-8' },
-            body:
-              `<?xml version="1.0" encoding="utf-8"?>
-        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-          <soap:Body>
-            <getTransCode xmlns="WSGDV">
-              <lat>string</lat>
-              <lng>string</lng>
-              <username>${Params.IMEI}</username>
-              <code>${this.state.code}</code>
-            </getTransCode>
-          </soap:Body>
-        </soap:Envelope>`
-          })
-            .then(resp => {
-              // Lay body text cua SOAP
-              let xmlResp = resp._bodyText;
-
-              // Convert xml string to Json:
-              var respJson = Utils.respXml2Json(xmlResp);
-
-              // Redirect to MainScreen with some props
-              navigate('MainScreen', { ...this.props, customerInfo: respJson });
-
-              // Update state:
-              this.setState({ inProgress: false, code: '' })
-            })
-            .catch(err => {
-              console.error(err);
-              // Update state:
-              this.setState({ inProgress: false })
-            })
-        } else {
-          // Show Toast thong bao cho nguoi dung 
-          ToastAndroid.show('Đang xử lý, vui lòng chờ.', ToastAndroid.LONG);
-        }
-      }
-    });
-  }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white'
-  },
-  logoView: {
-    alignItems: 'center',
-  },
-  logoTitle: {
-    fontSize: 18,
-    color: Params.PRIMARY_COLOR
-  },
-  formView: {
-    alignItems: 'center'
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' },
+  logoView: { alignItems: 'center', },
+  logoTitle: { fontSize: 18, color: Params.PRIMARY_COLOR },
+  formView: { alignItems: 'center' },
   codeStyle: {
     width: Params.SCREEN_WIDTH / 1.5,
     fontSize: 25,
@@ -189,41 +227,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     borderStyle: 'solid',
-    borderRadius: width / 4,
+    borderRadius: Params.SCREEN_WIDTH / 4,
     borderWidth: 1,
     borderColor: Params.PRIMARY_COLOR,
     paddingVertical: 13,
     backgroundColor: 'white'
   },
-  btnText: {
-    backgroundColor: Params.PRIMARY_COLOR,
-    width: Params.SCREEN_WIDTH / 1.5,
-    fontSize: 22,
-    color: 'white',
-    textAlign: 'center',
-    marginTop: 20,
-    paddingVertical: 20,
-    borderRadius: width / 4,
-    fontWeight: 'bold'
+  btnText: { 
+    backgroundColor: Params.PRIMARY_COLOR, 
+    width: Params.SCREEN_WIDTH / 1.5, 
+    marginTop: 20, 
+    paddingVertical: 20, 
+    borderRadius: Params.SCREEN_WIDTH / 4, 
+    // Text
+    fontSize: 22, fontWeight: 'bold', color: 'white', textAlign: 'center',
   },
-  backgroundImage: {
-    backgroundColor: '#ccc',
-    flex: 1,
-    resizeMode: 'cover',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-  },
-  activityIndicator: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  aIndView: {
-    alignItems: 'center',
-    height: 100,
-    justifyContent: 'center'
-  }
+  backgroundImage: { backgroundColor: '#ccc', flex: 1, resizeMode: 'cover', position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', },
+  activityIndicator: { justifyContent: 'center', alignItems: 'center', },
+  aIndView: { alignItems: 'center', height: 100, justifyContent: 'center' }
 });
 
 export default CodeScreen;
