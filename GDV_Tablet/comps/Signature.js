@@ -24,6 +24,7 @@ tools[sketchViewConstants.toolType.eraser.id] = {
 };
 
 class Signature extends Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -34,6 +35,10 @@ class Signature extends Component {
     };
     Keyboard.dismiss();
   }
+
+  // ========================================================================================================================================
+  // FUNCTION
+  // ========================================================================================================================================
 
   onSketchSave(saveEvent) {
     if(this.state.onDraw) {
@@ -70,13 +75,14 @@ class Signature extends Component {
             </uploadFile>
           </soap:Body>
         </soap:Envelope>`
-    })
-      .then((resp) => {
-        Utils.log('uploadSignature', resp);
-        ToastAndroid.show('Lưu chữ ký thành công!', ToastAndroid.BOTTOM);
-        this.setState({ onSaving: false });
-      })
-      .catch((err) => { console.error(err); this.setState({ onSaving: false }); });
+    }).then((resp) => {
+      Utils.log('uploadSignature', resp);
+      ToastAndroid.show('Lưu chữ ký thành công!', ToastAndroid.BOTTOM);
+      this.setState({ onSaving: false });
+    }).catch((err) => { 
+      console.error(err);
+      this.setState({ onSaving: false }); 
+    });
   }
 
   setFlexForSketch() {
@@ -102,15 +108,15 @@ class Signature extends Component {
     if(this.state.startDraw) {
       return (
         <View>
-          <TouchableWithoutFeedback
-            // onPress={() => this.setState({ onDraw: true })}
-            onPressIn={() => {this.setState({ onDraw: true }), console.log('1111')}}
-          >
+
+          <TouchableWithoutFeedback onPressIn={() => {this.setState({ onDraw: true }) }} >
             <SketchView style={[{ width: Params.SCREEN_WIDTH }, { ...this.setFlexForSketch() }]} ref="sketchRef"
               selectedTool={this.state.toolSelected}
               onSaveSketch={this.onSketchSave.bind(this)}
               localSourceImagePath={this.props.localSourceImagePath} />
           </TouchableWithoutFeedback>
+
+          {/* BUTTON */}
           <View style={{ flexDirection: 'row', backgroundColor: '#EEE' }}>
             <TouchableHighlight underlayColor={"#CCC"} style={{ flex: 1, alignItems: 'center', paddingVertical: 20 }} onPress={() => { this.refs.sketchRef.clearSketch(); this.setState({ onDraw: false }) }}>
               <Text style={{ color: '#888', fontWeight: '600' }}>Ký lại</Text>
@@ -119,6 +125,7 @@ class Signature extends Component {
               <Text style={{ color: '#888', fontWeight: '600' }}>Lưu chữ ký</Text>
             </TouchableHighlight>
           </View>
+
         </View>
       );
     } else {
@@ -128,16 +135,16 @@ class Signature extends Component {
           onPressIn={() => this.setState({ startDraw: true })}
         >
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text style={{
-              fontSize: Params.SCREEN_WIDTH / 15,
-            }}>
-              Chạm để bắt đầu ký tên
-          </Text>
+            <Text style={{ fontSize: Params.SCREEN_WIDTH / 15, }}> Chạm để bắt đầu ký tên </Text>
           </View>
         </TouchableOpacity>
       );
     }
   }
+
+  // ========================================================================================================================================
+  // RENDER
+  // ========================================================================================================================================
 
   render() {
     return (

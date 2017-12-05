@@ -222,16 +222,18 @@ const styles = StyleSheet.create({
   formView: { alignItems: 'center' },
   codeStyle: {
     width: Params.SCREEN_WIDTH / 1.5,
-    fontSize: 25,
-    color: '#303F9F',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    paddingVertical: 13,
+    backgroundColor: 'white',
+    // Border styles
     borderStyle: 'solid',
     borderRadius: Params.SCREEN_WIDTH / 4,
     borderWidth: 1,
     borderColor: Params.PRIMARY_COLOR,
-    paddingVertical: 13,
-    backgroundColor: 'white'
+    // Text Styles
+    fontSize: 25, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    color: '#303F9F',
   },
   btnText: { 
     backgroundColor: Params.PRIMARY_COLOR, 
@@ -239,8 +241,11 @@ const styles = StyleSheet.create({
     marginTop: 20, 
     paddingVertical: 20, 
     borderRadius: Params.SCREEN_WIDTH / 4, 
-    // Text
-    fontSize: 22, fontWeight: 'bold', color: 'white', textAlign: 'center',
+    // Text style
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    color: 'white', 
+    textAlign: 'center',
   },
   backgroundImage: { backgroundColor: '#ccc', flex: 1, resizeMode: 'cover', position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', },
   activityIndicator: { justifyContent: 'center', alignItems: 'center', },
