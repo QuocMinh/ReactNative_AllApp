@@ -3,12 +3,45 @@ import { View, Text, StyleSheet } from 'react-native';
 
 // Utils
 import { Utils, Params } from "../utils/Utils.js";
+const Log = Utils.log;
 // Component
 import RowInfo from "./RowInfo";
 
 class CustomerInfo extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      longitude: 'unknown',
+      latitude: 'unknown',
+    }
+
+    // Lay toa do vi tri cua nguoi dung
+    this.getUserLocation();
+  }
+
+  // ========================================================================================================================================
+  // FUNCTION
+  // ========================================================================================================================================
+
+  getUserLocation() {
+    navigator.geolocation.getCurrentPosition(
+      success => {
+        this.setState({
+          longitude: success.coords.longitude,
+          latitude: success.coords.latitude
+        });
+      },
+      error => { console.error(error); }
+    );
+  }
+
+  // ========================================================================================================================================
+  // RENDER
+  // ========================================================================================================================================
+
   render() {
+    Log('state: ', this.state);
     return (
       <View style={styles.container}>
         <RowInfo label='Họ tên:' value={this.props.customerInfo.hoten} />
