@@ -2,7 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, View, Animated } from 'react-native';
 import { BarCodeScanner, Permissions } from "expo";
 
-export default class ScanQRScreen extends React.Component {
+// Action
+import { readCode } from "../actions/QRCodeAction";
+// Connect
+import { connect } from "react-redux";
+
+class ScanQRScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -30,30 +35,13 @@ export default class ScanQRScreen extends React.Component {
   _handleBarCodeRead = ({ type, data }) => {
     console.log(data);
 
-    // this.props.updateResult && this.props.updateResult(data);
+    this.props.handleUpdateResult(data, true);
 
     // Hide screen
     Animated.timing(
       this.state.fadeAnim,
       { toValue: 0, duration: 200 }
     ).start();
-  }
-
-  _renderBarCodeScanner() {
-    if(!this.state.hasRead) {
-      return (
-        <Animated.View style={{ flex: 1 }}>
-          <BarCodeScanner
-            onBarCodeRead={this._handleBarCodeRead}
-            style={StyleSheet.absoluteFill}
-          />
-        </Animated.View>
-      );
-    } else {
-      return (
-        <View></View>
-      );
-    }
   }
 
   // ================================================================================================================
@@ -70,10 +58,10 @@ export default class ScanQRScreen extends React.Component {
       return <Text>No access to camera</Text>;
     } else {
       return (
-        <Animated.View style={{ flex: fadeAnim }}>
+        <Animated.View style={[{ flex: fadeAnim }, styles.container ]}>
           <BarCodeScanner
             onBarCodeRead={this._handleBarCodeRead}
-            style={StyleSheet.absoluteFill}
+            style={{width: 200, height: 200, position: 'absolute' }}
           />
         </Animated.View>
       );
@@ -83,9 +71,10 @@ export default class ScanQRScreen extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
 });
+
+export default ScanQRScreen;
