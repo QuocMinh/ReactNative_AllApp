@@ -48,7 +48,7 @@ class Signature extends Component {
       // Create file name = isdn_chuky
       var fileName = transactionInfo.isdn + '_chuky.jpg';
       // Upload to server
-      this.uploadSignature(Params.IMEI, transactionInfo.folder, fileName, saveEvent.base64Str);
+      this.uploadSignature(Params.IMEI, transactionInfo.folder, fileName, saveEvent.imageBase64);
     } else {
       Alert.alert('Thông báo!', 'Vui lòng ký tên trước khi lưu.');
     }
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#EEE657',
+    backgroundColor: '#FFF9C4',
     width: Params.SCREEN_WIDTH,
   },
 });

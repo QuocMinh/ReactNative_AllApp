@@ -17,7 +17,7 @@ class CustomerInfo extends Component {
     }
 
     // Lay toa do vi tri cua nguoi dung
-    this.getUserLocation();
+    // this.getUserLocation();
   }
 
   // ========================================================================================================================================
@@ -41,7 +41,6 @@ class CustomerInfo extends Component {
   // ========================================================================================================================================
 
   render() {
-    Log('state: ', this.state);
     return (
       <View style={styles.container}>
         <RowInfo label='Họ tên:' value={this.props.customerInfo.hoten} />
